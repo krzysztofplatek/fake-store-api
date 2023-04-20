@@ -1,5 +1,6 @@
 package com.fakestoreapi.service;
 
+import com.fakestoreapi.model.products.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +12,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,6 +56,24 @@ public class FakeStoreService {
             logger.error("Error while fetching data: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    public Map<String, BigDecimal> getCategoryValues() {
+        Map<String, BigDecimal> categoryMap = new HashMap<>();
+
+        try {
+            ResponseEntity<List<Product>> response = getData(productsUrl, Product[].class);
+            List<Product> products = response.getBody();
+
+            if (products != null) {
+                categoryMap.putAll(products.stream()
+                        .collect(Collectors.groupingBy(Product::getCategory, Collectors.mapping(p -> BigDecimal.valueOf(p.getPrice()), Collectors.reducing(BigDecimal.ZERO, BigDecimal::add)))));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get categories: " + e.getMessage());
+        }
+
+        return categoryMap;
     }
 
 }

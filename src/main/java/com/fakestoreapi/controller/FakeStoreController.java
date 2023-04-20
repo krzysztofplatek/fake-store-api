@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin
 @RestController
@@ -37,6 +39,11 @@ public class FakeStoreController {
     @GetMapping("/products")
     public ResponseEntity<List<Product>> getProducts(@Value("${fakestore.api.products}") String productsUrl) {
         return fakeStoreService.getData(productsUrl, Product[].class);
+    }
+
+    @GetMapping("/categories-and-values")
+    public Map<String, BigDecimal> getCategoryValues() {
+        return fakeStoreService.getCategoryValues();
     }
 
 }
