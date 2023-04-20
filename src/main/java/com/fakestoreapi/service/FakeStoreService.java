@@ -1,60 +1,59 @@
 package com.fakestoreapi.service;
 
-import com.fakestoreapi.model.carts.Cart;
-import com.fakestoreapi.model.products.Product;
-import com.fakestoreapi.model.users.User;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class FakeStoreService {
 
     private final RestTemplate restTemplate;
+    private final String usersUrl;
+    private final String cartsUrl;
+    private final String productsUrl;
 
-    @Autowired
-    private FakeStoreService(RestTemplate restTemplate) {
+    private static final Logger logger = LoggerFactory.getLogger(FakeStoreService.class);
+
+    public FakeStoreService(RestTemplate restTemplate,
+                            @Value("${fakestore.api.users}") String usersUrl,
+                            @Value("${fakestore.api.carts}") String cartsUrl,
+                            @Value("${fakestore.api.products}") String productsUrl) {
         this.restTemplate = restTemplate;
+        this.usersUrl = usersUrl;
+        this.cartsUrl = cartsUrl;
+        this.productsUrl = productsUrl;
     }
 
-    private static final String USERS_API = "https://fakestoreapi.com/users";
-    private static final String CARTS_API = "https://fakestoreapi.com/carts";
-    private static final String PRODUCTS_API = "https://fakestoreapi.com/products";
+    public <T> ResponseEntity<List<T>> getData(String url, Class<T[]> responseType) {
+        try {
+            ResponseEntity<T[]> response = restTemplate.getForEntity(url, responseType);
+            HttpStatusCode status = response.getStatusCode();
 
-    public List<User> getUsers() {
-        ResponseEntity<User[]> response = restTemplate.getForEntity(USERS_API, User[].class);
+            Optional<T[]> responseBody = Optional.ofNullable(response.getBody());
 
-        User[] users = response.getBody();
+            if (status == HttpStatus.OK && responseBody.isPresent()) {
+                List<T> data = Arrays.stream(responseBody.get()).collect(Collectors.toList());
+                return ResponseEntity.ok(data);
+            } else if (status == HttpStatus.NO_CONTENT) {
+                return ResponseEntity.noContent().build();
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
 
-        if (users == null) return Collections.emptyList();
-
-        return Arrays.asList(users);
-
-    }
-
-    public List<Cart> getCarts() {
-        ResponseEntity<Cart[]> response = restTemplate.getForEntity(CARTS_API, Cart[].class);
-
-        Cart[] carts = response.getBody();
-
-        if (carts == null) return Collections.emptyList();
-
-        return Arrays.asList(carts);
-    }
-
-    public List<Product> getProducts() {
-        ResponseEntity<Product[]> response = restTemplate.getForEntity(PRODUCTS_API, Product[].class);
-
-        Product[] products = response.getBody();
-
-        if (products == null) return Collections.emptyList();
-
-        return Arrays.asList(products);
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            logger.error("Error while fetching data: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 }

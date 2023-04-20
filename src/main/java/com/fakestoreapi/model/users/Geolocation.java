@@ -8,9 +8,9 @@ import lombok.Setter;
 @Setter
 public class Geolocation {
 
-    private String lat;
+    private double lat;
 
     @JsonProperty("long")
-    private String lng;
+    private double lng;
 
 }

@@ -4,6 +4,8 @@ import com.fakestoreapi.model.carts.Cart;
 import com.fakestoreapi.model.products.Product;
 import com.fakestoreapi.model.users.User;
 import com.fakestoreapi.service.FakeStoreService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,18 +25,18 @@ public class FakeStoreController {
     }
 
     @GetMapping("/users")
-    public List<User> getUsers() {
-        return fakeStoreService.getUsers();
+    public ResponseEntity<List<User>> getUsers(@Value("${fakestore.api.users}") String usersUrl) {
+        return fakeStoreService.getData(usersUrl, User[].class);
     }
 
     @GetMapping("/carts")
-    public List<Cart> getCarts() {
-        return fakeStoreService.getCarts();
+    public ResponseEntity<List<Cart>> getCarts(@Value("${fakestore.api.carts}") String cartsUrl) {
+        return fakeStoreService.getData(cartsUrl, Cart[].class);
     }
 
     @GetMapping("/products")
-    public List<Product> getProducts() {
-        return fakeStoreService.getProducts();
+    public ResponseEntity<List<Product>> getProducts(@Value("${fakestore.api.products}") String productsUrl) {
+        return fakeStoreService.getData(productsUrl, Product[].class);
     }
 
 }

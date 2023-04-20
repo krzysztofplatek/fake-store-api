@@ -1,6 +1,5 @@
 package com.fakestoreapi;
 
-import com.fakestoreapi.service.FakeStoreService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
