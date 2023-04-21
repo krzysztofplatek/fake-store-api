@@ -1,5 +1,7 @@
 package com.fakestoreapi.controller;
 
+import com.fakestoreapi.model.CartValueResponse;
+import com.fakestoreapi.model.NeighborsDistanceResponse;
 import com.fakestoreapi.model.carts.Cart;
 import com.fakestoreapi.model.products.Product;
 import com.fakestoreapi.model.users.User;
@@ -44,6 +46,16 @@ public class FakeStoreController {
     @GetMapping("/categories-and-values")
     public Map<String, BigDecimal> getCategoryValues() {
         return fakeStoreService.getCategoryValues();
+    }
+
+    @GetMapping("/highest-value-cart")
+    public CartValueResponse findCartWithHighestValue() {
+        return fakeStoreService.findCartWithHighestTotalValue();
+    }
+
+    @GetMapping("/furthest-neighbors")
+    public NeighborsDistanceResponse findFurthestNeighbors() {
+        return fakeStoreService.findFurthestNeighbors();
     }
 
 }
