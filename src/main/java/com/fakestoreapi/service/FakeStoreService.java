@@ -63,16 +63,15 @@ public class FakeStoreService {
     }
 
     public Map<String, BigDecimal> getCategoryValues() {
-        Map<String, BigDecimal> categoryMap = new HashMap<>();
+        Map<String, BigDecimal> categoryMap;
 
         try {
             ResponseEntity<List<Product>> response = getData(productsUrl, Product[].class);
-            List<Product> products = response.getBody();
+            Optional<List<Product>> optionalProducts = Optional.ofNullable(response.getBody());
+            List<Product> products = optionalProducts.orElse(Collections.emptyList());
 
-            if (products != null) {
-                categoryMap.putAll(products.stream()
-                        .collect(Collectors.groupingBy(Product::getCategory, Collectors.mapping(p -> BigDecimal.valueOf(p.getPrice()), Collectors.reducing(BigDecimal.ZERO, BigDecimal::add)))));
-            }
+            categoryMap = new HashMap<>(products.stream()
+                    .collect(Collectors.groupingBy(Product::getCategory, Collectors.mapping(p -> BigDecimal.valueOf(p.getPrice()), Collectors.reducing(BigDecimal.ZERO, BigDecimal::add)))));
         } catch (Exception e) {
             throw new RuntimeException("Error while proccesing data: " + e.getMessage());
         }
